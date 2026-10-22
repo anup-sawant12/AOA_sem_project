@@ -250,12 +250,16 @@ export function generateMatrixChainSteps({ dimensions }) {
     currentChainLength: n,
     activeCell: { row: 1, col: n },
     currentK: currentS[1][n],
+    minOperations: currentM[1][n],
     optimalParens,
     backtrackDetails: backtrackStepsList,
+    candidateSplits: [],
+    bestCostSoFar: currentM[1][n],
+    bestKSoFar: currentS[1][n],
     activeCodeLine: 14,
     description: {
       title: 'Backtracking Split Table for Parenthesization',
-      detail: `Table filled! Minimum scalar multiplications needed is m[1][${n}] = ${currentM[1][n]}. Now reading the split table s to construct optimal parenthesization.`,
+      detail: `Table filled! Minimum scalar multiplications needed is m[1][${n}] = ${currentM[1][n].toLocaleString()}. Now reading the split table s to construct optimal parenthesization.`,
       formula: `Optimal split for full chain: s[1][${n}] = ${currentS[1][n]}`
     }
   });
@@ -274,6 +278,10 @@ export function generateMatrixChainSteps({ dimensions }) {
     currentK: currentS[1][n],
     minOperations: currentM[1][n],
     optimalParens,
+    backtrackDetails: backtrackStepsList,
+    candidateSplits: [],
+    bestCostSoFar: currentM[1][n],
+    bestKSoFar: currentS[1][n],
     activeCodeLine: 16,
     description: {
       title: 'Optimal Parenthesization Found!',

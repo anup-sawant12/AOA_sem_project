@@ -143,9 +143,9 @@ export default function MatrixChainPage() {
 
           {isFinished && (
             <MatrixChainResult
-              minOperations={currentStep?.minOperations ?? 0}
-              optimalParens={currentStep?.optimalParens || ''}
-              backtrackDetails={currentStep?.backtrackDetails || []}
+              minOperations={currentStep?.minOperations ?? steps[steps.length - 1]?.minOperations ?? 0}
+              optimalParens={currentStep?.optimalParens || steps[steps.length - 1]?.optimalParens || ''}
+              backtrackDetails={currentStep?.backtrackDetails || steps[steps.length - 1]?.backtrackDetails || []}
               isVisible={isFinished}
             />
           )}

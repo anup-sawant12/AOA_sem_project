@@ -51,24 +51,27 @@ export default function MatrixChainTable({
           <div className="flex flex-wrap items-center gap-2">
             {Array.from({ length: n }).map((_, idx) => {
               const mIdx = idx + 1;
+              const isFinishedPhase = currentStep.phase === 'complete';
               const isIncludedInSubproblem =
                 activeCell && mIdx >= activeCell.row && mIdx <= activeCell.col;
               const isLeftSubproblem =
-                activeCell && currentK && mIdx >= activeCell.row && mIdx <= currentK;
+                currentStep.phase === 'compute' && activeCell && currentK && mIdx >= activeCell.row && mIdx <= currentK;
               const isRightSubproblem =
-                activeCell && currentK && mIdx > currentK && mIdx <= activeCell.col;
+                currentStep.phase === 'compute' && activeCell && currentK && mIdx > currentK && mIdx <= activeCell.col;
 
               return (
                 <React.Fragment key={idx}>
                   <div
                     className={`px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
-                      isLeftSubproblem
-                        ? 'bg-blue-100 border-blue-300 text-blue-900 font-bold shadow-2xs'
-                        : isRightSubproblem
-                          ? 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold shadow-2xs'
-                          : isIncludedInSubproblem
-                            ? 'bg-indigo-100 border-indigo-300 text-indigo-900 font-semibold'
-                            : 'bg-white border-slate-200 text-slate-700'
+                      isFinishedPhase
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold'
+                        : isLeftSubproblem
+                          ? 'bg-blue-100 border-blue-300 text-blue-900 font-bold shadow-2xs'
+                          : isRightSubproblem
+                            ? 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold shadow-2xs'
+                            : isIncludedInSubproblem
+                              ? 'bg-indigo-100 border-indigo-300 text-indigo-900 font-semibold'
+                              : 'bg-white border-slate-200 text-slate-700'
                     }`}
                   >
                     <span className="block font-bold">A{mIdx}</span>
@@ -83,12 +86,18 @@ export default function MatrixChainTable({
               );
             })}
           </div>
-          {currentK && activeCell && (
+          {currentStep.phase === 'compute' && currentK && activeCell && (
             <div className="mt-2 text-[11px] text-slate-600 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
               <span>Left subchain (A{activeCell.row}..A{currentK})</span>
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ml-2"></span>
               <span>Right subchain (A{currentK + 1}..A{activeCell.col})</span>
+            </div>
+          )}
+          {currentStep.phase === 'complete' && currentStep.optimalParens && (
+            <div className="mt-2 text-[11px] text-emerald-700 font-medium flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Optimal Parenthesized Chain: <strong className="font-mono bg-emerald-100/70 px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-900">{currentStep.optimalParens}</strong></span>
             </div>
           )}
         </div>
@@ -150,7 +159,9 @@ export default function MatrixChainTable({
 
                         let cellClass = 'bg-white text-slate-800';
                         if (isActive) {
-                          cellClass = 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-400 shadow-sm';
+                          cellClass = currentStep.phase === 'complete'
+                            ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-400 shadow-sm'
+                            : 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-400 shadow-sm';
                         } else if (isLeft) {
                           cellClass = 'bg-blue-100 text-blue-900 font-semibold ring-1 ring-blue-300';
                         } else if (isRight) {
@@ -167,7 +178,7 @@ export default function MatrixChainTable({
                             className={`p-2.5 border-r border-slate-100 transition-colors ${cellClass}`}
                           >
                             <span className="block text-xs">
-                              {val !== null ? val.toLocaleString() : '—'}
+                              {val != null ? Number(val).toLocaleString() : '—'}
                             </span>
                             {splitK && !isDiag && (
                               <span

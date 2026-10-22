@@ -26,7 +26,7 @@ export default function MatrixChainResult({
               Minimum Multiplications
             </span>
             <span className="text-2xl font-black text-emerald-700 font-mono tracking-tight">
-              {Number(minOperations).toLocaleString()}
+              {Number(minOperations || 0).toLocaleString()}
             </span>
           </div>
 

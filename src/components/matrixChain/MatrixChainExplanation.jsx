@@ -27,6 +27,8 @@ export default function MatrixChainExplanation({ currentStep }) {
     bestCostSoFar,
     bestKSoFar,
     optimalParens,
+    backtrackDetails = [],
+    minOperations,
     phase
   } = currentStep;
 
@@ -48,8 +50,8 @@ export default function MatrixChainExplanation({ currentStep }) {
           )}
         </div>
 
-        {/* Candidate Split Breakdown if computing */}
-        {activeCell && currentK && (
+        {/* Candidate Split Breakdown ONLY if computing */}
+        {phase === 'compute' && activeCell && currentK && (
           <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <span className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
@@ -57,7 +59,7 @@ export default function MatrixChainExplanation({ currentStep }) {
                 Testing Split k = {currentK} (A{activeCell.row}..A{currentK}) × (A{currentK + 1}..A{activeCell.col})
               </span>
               <span className="font-mono text-[11px] font-bold text-indigo-700">
-                Current Best: {bestCostSoFar !== null ? `${bestCostSoFar.toLocaleString()} (k=${bestKSoFar})` : '—'}
+                Current Best: {bestCostSoFar != null ? `${Number(bestCostSoFar).toLocaleString()} (k=${bestKSoFar})` : '—'}
               </span>
             </div>
 
@@ -88,8 +90,8 @@ export default function MatrixChainExplanation({ currentStep }) {
           </div>
         )}
 
-        {/* All Splits Tested Table for Active Cell */}
-        {candidateSplits.length > 0 && (
+        {/* All Splits Tested Table for Active Cell during compute phase */}
+        {phase === 'compute' && activeCell && candidateSplits && candidateSplits.length > 0 && (
           <div>
             <span className="text-[11px] font-semibold uppercase text-slate-500 block mb-1.5">
               Tested Splits for m[{activeCell.row}][{activeCell.col}]:
@@ -123,9 +125,9 @@ export default function MatrixChainExplanation({ currentStep }) {
                         <td className="px-2.5 py-1.5">k = {cs.k}</td>
                         <td className="px-2.5 py-1.5 text-right">{cs.leftCost}</td>
                         <td className="px-2.5 py-1.5 text-right">{cs.rightCost}</td>
-                        <td className="px-2.5 py-1.5 text-right">{cs.multCost.toLocaleString()}</td>
+                        <td className="px-2.5 py-1.5 text-right">{Number(cs.multCost || 0).toLocaleString()}</td>
                         <td className="px-2.5 py-1.5 text-right font-bold text-slate-900">
-                          {cs.totalCost.toLocaleString()}
+                          {Number(cs.totalCost || 0).toLocaleString()}
                         </td>
                         <td className="px-2.5 py-1.5 text-center">
                           {cs.isMin ? (
@@ -144,6 +146,45 @@ export default function MatrixChainExplanation({ currentStep }) {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Backtracking & Parenthesization Breakdown during backtrack/complete */}
+        {(phase === 'backtrack' || phase === 'complete') && backtrackDetails && backtrackDetails.length > 0 && (
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+            <div className="px-3.5 py-2 bg-indigo-50/70 border-b border-indigo-100 font-semibold text-indigo-900 flex items-center justify-between">
+              <span>Split Table Traversal (Reconstruction)</span>
+              <span className="font-mono text-[11px] text-indigo-700 font-bold">
+                Target: m[1][{currentStep.n}]
+              </span>
+            </div>
+            <div className="p-3 space-y-2">
+              <p className="text-slate-600 text-[11px]">
+                Parenthesization is built recursively by looking up the split index <code>k = s[i][j]</code> from cell <code>s[1][{currentStep.n}]</code> downward:
+              </p>
+              <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto">
+                {backtrackDetails.map((b, idx) => (
+                  <div key={idx} className="py-1.5 flex items-start gap-2 text-[11px]">
+                    <span className="font-mono font-bold text-indigo-600 shrink-0">#{idx + 1}</span>
+                    <span className="text-slate-700">{b.detail}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Completion Summary Card on Final Step */}
+        {phase === 'complete' && (
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+            <div className="flex items-center gap-2 text-emerald-800 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Multiplication Pipeline Fully Optimized</span>
+            </div>
+            <p className="text-slate-600 text-[11px]">
+              Final minimum scalar multiplications required: <strong className="font-mono text-emerald-800 font-bold">{Number(minOperations || 0).toLocaleString()}</strong>.
+              Follow the parenthesization order <strong className="font-mono text-slate-800">{optimalParens}</strong> to compute the chain product with minimum computational overhead.
+            </p>
           </div>
         )}
       </div>
